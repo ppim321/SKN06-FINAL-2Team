@@ -1,1 +1,213 @@
-{% block title %} historical 챗봇_회원{% endblock title %}
+{% extends "framework/framework.html" %}
+{% load static %}
+{% block title %}historical 챗봇_회원{% endblock title %}
+{% block content %}
+{% load static %}
+<head>
+    <style>
+        .chat-container {
+            width: 70%;
+            max-width: 900px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 600px;
+            max-height: 80vh;
+            position: relative;
+        }
+
+        .chat-box {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            height: calc(100% - 80px);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-bottom: 80px;
+        }
+
+        .chat-message {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .user-message {
+            justify-content: flex-end;
+        }
+
+        .ai-message {
+            justify-content: flex-start;
+        }
+
+        .message-text {
+            padding: 12px;
+            border-radius: 12px;
+            max-width: 70%;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .user-text {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .ai-text {
+            background-color: #f1f1f1;
+            color: black;
+        }
+
+        .profile-pic {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .ai-message .profile-pic {
+            align-self: flex-start;
+        }
+
+        .input-container {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            background: white;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .input-container input {
+            flex-grow: 1;
+            padding: 12px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .input-container button {
+            padding: 12px 15px;
+            font-size: 14px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-left: 8px;
+            border-radius: 8px;
+        }
+
+        .input-container button:hover {
+            background-color: #0056b3;
+        }
+
+        /* 🔹 프롤로그 스타일 */
+        .prologue-container {
+            text-align: center;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .prologue-container img {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .prologue-text {
+            font-size: 16px;
+            color: #333;
+            line-height: 1.6;
+            text-align: left;
+            padding: 10px;
+        }
+
+        .start-chat-btn {
+            margin-top: 20px;
+            padding: 12px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        .start-chat-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <script>
+        function startChat() {
+            document.getElementById("prologue-container").style.display = "none";
+            document.getElementById("chat-container").style.display = "block";
+        }
+
+        function askChatbot() {
+            const question = document.getElementById("question").value;
+            if (!question.trim()) return;
+
+            const chatBox = document.getElementById("chat-box");
+
+            // 사용자 메시지 추가
+            const userMessage = `<div class="chat-message user-message">
+                <span class="message-text user-text">${question}</span>
+                <img src="{{ profile_image_url }}" alt="User" class="profile-pic">
+            </div>`;
+            chatBox.innerHTML += userMessage;
+            document.getElementById("question").value = "";
+
+            // 챗봇 응답 가져오기
+            fetch(`?question=${encodeURIComponent(question)}`)
+                .then(response => response.text())
+                .then(data => {
+                    const aiMessage = `<div class="chat-message ai-message">
+                        <img src="{% static 'img/historical/historical_ai.jpg' %}" alt="AI" class="profile-pic">
+                        <span class="message-text ai-text">${data}</span>
+                    </div>`;
+                    chatBox.innerHTML += aiMessage;
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                })
+                .catch(error => console.error("오류 발생:", error));
+        }
+    </script>
+</head>
+<body>
+    <h1>무협 챗봇</h1>
+
+    <!-- 🔹 프롤로그 추가 -->
+    <div id="prologue-container" class="prologue-container">
+        <img src="{% static 'img/historical/historical_ai_prologue.png' %}" alt="Historical AI Prologue">
+        <div class="prologue-text">
+            <h2>강호의 연호</h2>
+            <p>어스름이 깔린 창밖의 하늘</p>
+            <p>창밖으로는 어스름이 깔린 하늘이 보입니다. 바람이 살랑살랑 불어오며...</p>
+            <p>연호, 강호의 저명한 무인</p>
+            <p>그는 연호, 강호에서 이름을 알린 무문 출신의 무인입니다...</p>
+            <p>어서오시오, 그대는 무엇을 원하는가? 찾는 것이 있는가...</p>
+        </div>
+        <button class="start-chat-btn" onclick="startChat()">대화를 시작합니다</button>
+    </div>
+
+    <!-- 🔹 기존 채팅창 (프롤로그 후 나타남) -->
+    <div id="chat-container" class="chat-container" style="display: none;">
+        <div id="chat-box" class="chat-box"></div>
+        <div class="input-container">
+            <input type="text" id="question" placeholder="메시지를 입력하세요..." onkeypress="if(event.keyCode==13) askChatbot()">
+            <button onclick="askChatbot()">전송</button>
+        </div>
+    </div>
+</body>
+{% endblock content %}
+

@@ -5,6 +5,7 @@ from django.http import HttpResponse
 import logging
 from chatbot.romance_chatbot import process_romance_chatbot_request
 from wishlist.utils import extract_titles, save_recommended_works
+from chatbot.historical_chatbot import process_historical_chatbot_request
 
 logging.basicConfig(level=logging.INFO)
 
@@ -59,4 +60,28 @@ def fantasy_chatbot_view(request):
 
 @login_required
 def historical_chatbot_view(request):
-    return render(request, "chatbot/historical_chatbot.html")
+    question = request.GET.get("question", "").strip()
+    session_id = request.session.get("session_id")
+    if not session_id:
+        request.session.create()
+        session_id = request.session.session_key
+        request.session["session_id"] = session_id
+    logging.info(f"session_id: {session_id}")
+
+    if not question:
+        profile_image_url = "/static/img/historical/historical_user.png"
+        return render(
+            request,
+            "chatbot/historical_chatbot.html",
+            {"profile_image_url": profile_image_url},
+        )
+
+    response = process_historical_chatbot_request(question, session_id, request.user)
+    for step in response:
+        logging.info(step)
+    final_output = step["output"]
+    recommended_titles = extract_titles(final_output)
+    if recommended_titles:
+        logging.info(recommended_titles)
+        save_recommended_works(request.user, recommended_titles, "romance")
+    return HttpResponse(markdown2.markdown(final_output))
